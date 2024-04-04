@@ -22,9 +22,10 @@ func main() {
         // Mengambil value dan meletakkannya pada variable
         start := r.Form.Get("start")
         finish := r.Form.Get("finish")
+		algorithm := r.Form.Get("algorithm")
 
 		// Debug
-        fmt.Printf("Start: %s, Finish: %s\n", start, finish)
+		fmt.Printf("Start: %s, Finish: %s, Algorithm: %s\n", start, finish, algorithm)
 
 		// Memproses data (ubah ini)
         w.WriteHeader(http.StatusOK)

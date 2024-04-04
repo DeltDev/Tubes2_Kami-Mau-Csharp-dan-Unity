@@ -14,14 +14,20 @@
     </div>
     <!-- Form untuk website -->
     <form action="/submit" method="GET">
-        <!-- Submission start, finish, dan jenis algoritma akan di pass ke file .go di backend -->
-        <p>Please enter the start Wikipedia Page dan finish Wikipedia Page:</p>
+        <!-- Submission start, finish, and algorithm type will be passed to the Go file in backend -->
+        <p>Please enter the start Wikipedia Page and finish Wikipedia Page:</p>
         <input type="text" id="start" name="start" placeholder="Start Wikipedia Page" required>
         <div id="startSuggestions"></div>
         <input type="text" id="finish" name="finish" placeholder="Final Wikipedia Page" required>
         <div id="finishSuggestions"></div>
+        <p>Select Algorithm:</p>
+        <input type="radio" id="ids" name="algorithm" value="IDS" checked>
+        <label for="ids">IDS</label>
+        <input type="radio" id="bfs" name="algorithm" value="BFS">
+        <label for="bfs">BFS</label>
         <button type="submit">Find the Path!</button>  
     </form>
+    
 
     <!-- Fungsi JavaScript untuk memberikan rekomendasi/sugesti Wikipedia Page -->
     <script>
