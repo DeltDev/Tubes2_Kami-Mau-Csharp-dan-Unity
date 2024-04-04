@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WikiRace Solver</title>
+</head>
+<body>
+    <!-- Header website -->
+    <div>
+        <h1>WikiRace Solver</h1>
+        <h2>Using IDS and BFS Algorithm</h2>
+        <h3>Made by Kelompok "Kami Mau C# dan Unity"</h3>
+    </div>
+    <!-- Form untuk website -->
+    <form action="/submit" method="GET">
+        <!-- Submission start, finish, dan jenis algoritma akan di pass ke file .go di backend -->
+        <p>Please enter the start Wikipedia Page dan finish Wikipedia Page:</p>
+        <input type="text" id="start" name="start" placeholder="Start Wikipedia Page" required>
+        <div id="startSuggestions"></div>
+        <input type="text" id="finish" name="finish" placeholder="Final Wikipedia Page" required>
+        <div id="finishSuggestions"></div>
+        <button type="submit">Find the Path!</button>  
+    </form>
+
+    <!-- Fungsi JavaScript untuk memberikan rekomendasi/sugesti Wikipedia Page -->
+    <script>
+        // Fungsi memberikan sugesti Wikipedia Page
+        function setupSuggestions(inputField, suggestionsDiv) {
+            inputField.addEventListener('input', function() {
+                const searchTerm = inputField.value.trim();
+                if (searchTerm === '') {
+                    suggestionsDiv.innerHTML = '';
+                    return;
+                }
+
+                // Menggunakan API Wikipedia untuk mencari Page yang berhubungan dengan input
+                fetch(`https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=${searchTerm}&origin=*`)
+                .then(response => response.json())
+                .then(data => {
+                    const suggestions = data[1];
+                    suggestionsDiv.innerHTML = '';
+                    // Jika tidak ditemukan
+                    if (suggestions.length === 0) {
+                        suggestionsDiv.innerHTML = '<p>No suggestions found</p>';
+                    // Jika ditemukan
+                    } else {
+                        // Masukkan dalam list
+                        const ul = document.createElement('ul');
+                        suggestions.forEach(suggestion => {
+                            const li = document.createElement('li');
+                            li.textContent = suggestion;
+                            // Clickable
+                            li.addEventListener('click', function() {
+                                inputField.value = suggestion;
+                                suggestionsDiv.innerHTML = '';
+                            });
+                            ul.appendChild(li);
+                        });
+                        suggestionsDiv.appendChild(ul);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    suggestionsDiv.innerHTML = '<p>Error fetching suggestions. Please try again later.</p>';
+                });
+            });
+        }
+
+        // Untuk start
+        const startInput = document.getElementById('start');
+        const startSuggestionsDiv = document.getElementById('startSuggestions');
+        setupSuggestions(startInput, startSuggestionsDiv);
+
+        // Untuk finish
+        const finishInput = document.getElementById('finish');
+        const finishSuggestionsDiv = document.getElementById('finishSuggestions');
+        setupSuggestions(finishInput, finishSuggestionsDiv);
+    </script>
+</body>
+</html>
