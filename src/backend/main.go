@@ -29,7 +29,11 @@ func main() {
 
 		// Memproses data (ubah ini)
         w.WriteHeader(http.StatusOK)
-        w.Write([]byte("Data received successfully"))
+        if algorithm == "IDS"{
+            w.Write([]byte("Data received successfully (IDS)"))
+        } else if algorithm == "BFS"{
+            w.Write([]byte("Data received successfully (BFS)"))
+        }
     })
 
     // Menyalakan server
