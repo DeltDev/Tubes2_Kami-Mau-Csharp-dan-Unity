@@ -30,7 +30,6 @@ func bfs(startPage string, endPage string) []string {
 				if !visited[link] {
 					if link == endPage {
 						fmt.Println("Found the end page!")
-						fmt.Println("Path: ", currentPage, " -> ", link)
 						for i:=0; i < len(path); i++{
 							if path[i][len(path[i])-1] == currentPage {
 								temp := make([]string, len(path[i]))
@@ -136,12 +135,12 @@ func main() {
 		// Debug
 		fmt.Printf("Start: %s, Finish: %s, Algorithm: %s\n", start, finish, algorithm)
 
-        if algorithm == "TES" {
-            start := start
+        if algorithm == "BFS" {
             // daftar:= getLinks(start)
             // fmt.Println(daftar)
 			// fmt.Fprintf(w, "%v", daftar)
 			path := bfs(start, finish)
+			fmt.Println("Path: ", path)
 			fmt.Fprintf(w, "%v", path)
 
 
