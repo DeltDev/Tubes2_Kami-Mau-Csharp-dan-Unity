@@ -9,7 +9,61 @@ import (
 )
 
 
+func bfs(startPage string, endPage string) []string {
+
+	path := [][]string{{startPage}}
+	queue := []string{startPage}
+	visited := make(map[string]bool)
+	visited[startPage] = false
+	if startPage == endPage {
+		fmt.Println("Found the end page!")
+		fmt.Println("Path: ", startPage)
+		return []string{startPage}
+	}
+	for len(queue) > 0 {
+		currentPage := queue[0]
+		queue = queue[1:]
+		if !visited[currentPage] {
+			visited[currentPage] = true
+			links := getLinks(currentPage)
+			for _, link := range links {
+				if !visited[link] {
+					if link == endPage {
+						fmt.Println("Found the end page!")
+						fmt.Println("Path: ", currentPage, " -> ", link)
+						for i:=0; i < len(path); i++{
+							if path[i][len(path[i])-1] == currentPage {
+								temp := make([]string, len(path[i]))
+								copy(temp, path[i])
+								temp = append(temp, link)
+								path = append(path, temp)
+								return path[len(path)-1]
+							}
+						}
+					}
+
+					for i:=0; i < len(path); i++{
+						if path[i][len(path[i])-1] == currentPage {
+							// fmt.Println("currentPage: ", currentPage)
+							temp := make([]string, len(path[i]))
+							copy(temp, path[i])
+							temp = append(temp, link)
+							// fmt.Println("tempAkhir: ", temp)
+							path = append(path, temp)
+							break
+						}
+					}
+				
+					queue = append(queue, link)
+				}
+			}
+		}
+	}
+	return []string{}
+}
+
 func getLinks(url string) []string {
+	url = "https://en.wikipedia.org/wiki/" + url
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println("Error: ", err)
@@ -52,7 +106,8 @@ func getLinks(url string) []string {
 					}
 				}
 				if havekHref && haveTitle {
-					links = append(links, t.Attr[0].Val)
+					var pranala string = strings.TrimPrefix(t.Attr[0].Val, "/wiki/")
+					links = append(links, pranala)
 				}
 			}
 		}
@@ -82,10 +137,14 @@ func main() {
 		fmt.Printf("Start: %s, Finish: %s, Algorithm: %s\n", start, finish, algorithm)
 
         if algorithm == "TES" {
-            start := "https://en.wikipedia.org/wiki/" + start
-            daftar:= getLinks(start)
-            fmt.Println(daftar)
-			fmt.Fprintf(w, "%v", daftar)
+            start := start
+            // daftar:= getLinks(start)
+            // fmt.Println(daftar)
+			// fmt.Fprintf(w, "%v", daftar)
+			path := bfs(start, finish)
+			fmt.Fprintf(w, "%v", path)
+
+
         }
 
 		// Memproses data (ubah ini)
