@@ -117,30 +117,21 @@ func getLinks(url string) []string {
 	}
 }
 
+// Fungsi untuk mengganti placeholder pada HTML dengan hasil
 func outputHTML(w http.ResponseWriter, filename string, path []string) {
-    // Open and read the HTML file
     htmlData, err := ioutil.ReadFile(filename)
     if err != nil {
         http.Error(w, "Failed to open HTML file", http.StatusInternalServerError)
         return
     }
-
-    // Convert HTML data to string
     htmlString := string(htmlData)
-
-    // Format path array into a string with commas
     var pathString string
     if len(path) > 0 {
         pathString = strings.Join(path, ", ")
     }
-
-    // Modify HTML string to include path and its length
     pathString = fmt.Sprintf("Path: %s<br>Degree: %d", pathString, len(path))
 
-    // Replace a placeholder in HTML with the path string
     htmlString = strings.Replace(htmlString, "<!-- Placeholder -->", pathString, 1)
-
-    // Write the modified HTML string to the response
     w.Header().Set("Content-Type", "text/html")
     fmt.Fprint(w, htmlString)
 }
