@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"html/template"
 	"net/http"
 	"strings"
 
@@ -10,7 +10,7 @@ import (
 )
 
 type Response struct {
-    Path []string `json:"path"`
+    Path []string
 }
 
 func bfs(startPage string, endPage string) []string {
@@ -117,29 +117,28 @@ func getLinks(url string) []string {
 	}
 }
 
-// Fungsi untuk mengganti placeholder pada HTML dengan hasil
-func outputHTML(w http.ResponseWriter, filename string, path []string) {
-    htmlData, err := ioutil.ReadFile(filename)
-    if err != nil {
-        http.Error(w, "Failed to open HTML file", http.StatusInternalServerError)
-        return
-    }
-    htmlString := string(htmlData)
-    var pathString string
-    if len(path) > 0 {
-        pathString = strings.Join(path, ", ")
-    }
-    pathString = fmt.Sprintf("Path: %s<br>Degree: %d", pathString, len(path))
-
-    htmlString = strings.Replace(htmlString, "<!-- Placeholder -->", pathString, 1)
-    w.Header().Set("Content-Type", "text/html")
-    fmt.Fprint(w, htmlString)
-}
-
 func main() {
-    // Membuat server untuk frontend
-    fs := http.FileServer(http.Dir("../frontend"))
-    http.Handle("/", fs)
+    // Membuat server untuk frontend 
+	// sekaligus inisialisasi awal empty array
+    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        var paths []string
+
+        data := Response{
+            Path: paths,
+        }
+
+        tmpl, err := template.ParseFiles("../frontend/index.html")
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+
+        err = tmpl.Execute(w, data)
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+	})
 
     // Proses mengambil data dari form
     http.HandleFunc("/submit", func(w http.ResponseWriter, r *http.Request) {
@@ -158,15 +157,29 @@ func main() {
 		// Debug
 		fmt.Printf("Start: %s, Finish: %s, Algorithm: %s\n", start, finish, algorithm)
 
+		// Mencari hasil
 		var path []string
 		if algorithm == "BFS" {
 			path = bfs(start, finish)
 		}
 
+		// Debug
 		fmt.Println(path)
 
-        outputHTML(w, "../frontend/index.html", path)
+		// Passing ke HTML
+        data := Response{Path: path}
 
+        tmpl, err := template.ParseFiles("../frontend/index.html")
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+
+        err = tmpl.Execute(w, data)
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
 	})
 
     // Menyalakan server

@@ -145,7 +145,13 @@
         </form>
     </div>
     <div id="result">
-        <!-- Placeholder -->
+        <h3>Path:</h3>
+        <ul>
+            {{range .Path}}
+                <li>- {{.}}</li>
+            {{end}}
+        </ul>
+        <h3>Degree: {{len .Path}}</h3>
     </div>
 
     <!-- Fungsi JavaScript untuk memberikan rekomendasi/sugesti Wikipedia Page -->
