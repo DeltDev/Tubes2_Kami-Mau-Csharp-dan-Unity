@@ -1,13 +1,17 @@
 package main
 
 import (
-    "fmt"
-    "net/http"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"strings"
 
 	"golang.org/x/net/html"
 )
 
+type Response struct {
+    Path []string `json:"path"`
+}
 
 func bfs(startPage string, endPage string) []string {
 
@@ -47,7 +51,7 @@ func bfs(startPage string, endPage string) []string {
 							temp := make([]string, len(path[i]))
 							copy(temp, path[i])
 							temp = append(temp, link)
-							// fmt.Println("tempAkhir: ", temp)
+							fmt.Println("tempAkhir: ", temp)
 							path = append(path, temp)
 							break
 						}
@@ -113,6 +117,34 @@ func getLinks(url string) []string {
 	}
 }
 
+func outputHTML(w http.ResponseWriter, filename string, path []string) {
+    // Open and read the HTML file
+    htmlData, err := ioutil.ReadFile(filename)
+    if err != nil {
+        http.Error(w, "Failed to open HTML file", http.StatusInternalServerError)
+        return
+    }
+
+    // Convert HTML data to string
+    htmlString := string(htmlData)
+
+    // Format path array into a string with commas
+    var pathString string
+    if len(path) > 0 {
+        pathString = strings.Join(path, ", ")
+    }
+
+    // Modify HTML string to include path and its length
+    pathString = fmt.Sprintf("Path: %s<br>Degree: %d", pathString, len(path))
+
+    // Replace a placeholder in HTML with the path string
+    htmlString = strings.Replace(htmlString, "<!-- Placeholder -->", pathString, 1)
+
+    // Write the modified HTML string to the response
+    w.Header().Set("Content-Type", "text/html")
+    fmt.Fprint(w, htmlString)
+}
+
 func main() {
     // Membuat server untuk frontend
     fs := http.FileServer(http.Dir("../frontend"))
@@ -128,28 +160,23 @@ func main() {
         }
 
         // Mengambil value dan meletakkannya pada variable
-        start := r.Form.Get("start")
-        finish := r.Form.Get("finish")
+        start := strings.ReplaceAll(r.Form.Get("start"), " ", "_")
+        finish := strings.ReplaceAll(r.Form.Get("finish"), " ", "_")
 		algorithm := r.Form.Get("algorithm")
 
 		// Debug
 		fmt.Printf("Start: %s, Finish: %s, Algorithm: %s\n", start, finish, algorithm)
 
-        if algorithm == "BFS" {
-            // daftar:= getLinks(start)
-            // fmt.Println(daftar)
-			// fmt.Fprintf(w, "%v", daftar)
-			path := bfs(start, finish)
-			fmt.Println("Path: ", path)
-			fmt.Fprintf(w, "%v", path)
+		var path []string
+		if algorithm == "BFS" {
+			path = bfs(start, finish)
+		}
 
+		fmt.Println(path)
 
-        }
+        outputHTML(w, "../frontend/index.html", path)
 
-		// Memproses data (ubah ini)
-        w.WriteHeader(http.StatusOK)
-        // w.Write([]byte("Data received successfully"))
-    })
+	})
 
     // Menyalakan server
     fmt.Println("Server is running on port 8080")
