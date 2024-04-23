@@ -30,6 +30,7 @@ func bfs(startPage string, endPage string) []string {
 		if !visited[currentPage] {
 			visited[currentPage] = true
 			links := getLinks(currentPage)
+			fmt.Println("links: ", links)
 			for _, link := range links {
 				if !visited[link] {
 					if link == endPage {
@@ -74,6 +75,7 @@ func getLinks(url string) []string {
 	}
 	defer resp.Body.Close()
 	links := []string{}
+	alreadyAdded := make(map[string]bool)
 	z := html.NewTokenizer(resp.Body)
 	for {
 		//contoh tt adalah EndTag atau bisa jadi StartTag
@@ -86,7 +88,7 @@ func getLinks(url string) []string {
 			// atau <ul> atau <li> dan lain lain
 			t := z.Token()
 			// contoh t.Attr adalah [{ href //en.m.wikipedia.org/w/index.php?title=Go_(programming_language)&mobileaction=toggle_view_mobile} { class noprint stopMobileRedirectToggle}]
-			// atau
+			// atau 
 			// contoh t.Data adalah a  atau ul atau li atau div, dan lain lain
 			// buat boolean checkHref
 			havekHref := false
@@ -96,21 +98,24 @@ func getLinks(url string) []string {
 					// fmt.Println(a)
 					// contoh a itu adalah { title AngularJS} atau { href /wiki/AngularJS} atau { href https://developer.wikimedia.org} atau dll
 					if a.Key == "href" {
-						if strings.HasPrefix(a.Val, "/wiki/") && !strings.Contains(a.Val, ":") {
-							havekHref = true
+						if strings.HasPrefix(a.Val, "/wiki/") && !strings.Contains(a.Val, ":") && (a.Val != "/wiki/Main_Page") {
+						havekHref = true
 						}
 					}
 					if a.Key == "title" {
 						// tidak boleh ada titik dua
-						str := a.Val
-						if !strings.Contains(str, ":") {
+						str	:= a.Val
+						if !strings.Contains(str, ":"){
 							haveTitle = true
 						}
 					}
 				}
 				if havekHref && haveTitle {
 					var pranala string = strings.TrimPrefix(t.Attr[0].Val, "/wiki/")
-					links = append(links, pranala)
+					if !alreadyAdded[pranala] {
+						links = append(links, pranala)
+						alreadyAdded[pranala] = true
+					}
 				}
 			}
 		}
