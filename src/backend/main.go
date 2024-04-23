@@ -88,7 +88,7 @@ func getLinks(url string) []string {
 			// atau <ul> atau <li> dan lain lain
 			t := z.Token()
 			// contoh t.Attr adalah [{ href //en.m.wikipedia.org/w/index.php?title=Go_(programming_language)&mobileaction=toggle_view_mobile} { class noprint stopMobileRedirectToggle}]
-			// atau 
+			// atau
 			// contoh t.Data adalah a  atau ul atau li atau div, dan lain lain
 			// buat boolean checkHref
 			havekHref := false
@@ -99,13 +99,13 @@ func getLinks(url string) []string {
 					// contoh a itu adalah { title AngularJS} atau { href /wiki/AngularJS} atau { href https://developer.wikimedia.org} atau dll
 					if a.Key == "href" {
 						if strings.HasPrefix(a.Val, "/wiki/") && !strings.Contains(a.Val, ":") && (a.Val != "/wiki/Main_Page") {
-						havekHref = true
+							havekHref = true
 						}
 					}
 					if a.Key == "title" {
 						// tidak boleh ada titik dua
-						str	:= a.Val
-						if !strings.Contains(str, ":"){
+						str := a.Val
+						if !strings.Contains(str, ":") {
 							haveTitle = true
 						}
 					}
@@ -167,7 +167,7 @@ func main() {
 		if algorithm == "BFS" {
 			path = bfs(start, finish)
 		} else if algorithm == "IDS" {
-			IDS(start, finish, 0)
+			path = IDS(start, finish)
 		}
 
 		// Debug
@@ -194,6 +194,40 @@ func main() {
 	http.ListenAndServe(":8080", nil)
 }
 
-func IDS(startPage string, endPage string, iteration int) {
-	fmt.Println(startPage, endPage, iteration)
+func IDS(startPage string, endPage string) []string {
+	//debug
+	// links := getLinks(startPage)
+	// fmt.Println(links)
+	path := []string{} //cari path hasil
+	found := false
+	for iteration := 0; !found; iteration++ { //tambah kedalaman terus sampai ketemu pathnya
+		path, found = DLS(startPage, endPage, iteration) //pakai algoritma DLS
+		//debug
+		// fmt.Println("path: ", path, "isFound: ", found, "iteration: ", iteration)
+		if found { //stop IDS kalo udah ketemu
+			break
+		}
+	}
+	return path //return path yang udah ketemu
+}
+
+func DLS(src string, target string, limit int) ([]string, bool) {
+	fmt.Println("Halaman yang dikunjungi sekarang: ",src,"Halaman tujuan: ", target, "Batas kedalaman iterasi: ", limit)
+	if src == target { //kalau halaman yang divisit sekarang sama dengan halaman yang dicari
+		ret := []string{src} //masukin ke path
+		return ret, true     //artinya sudah ketemu pathnya
+	}
+
+	if limit <= 0 { //kalau limitnya sudah habis DAN src dan targetnya beda
+		return nil, false //tidak ketemu
+	}
+
+	links := getLinks(src)           //dapatkan semua link yang ada di halaman yang sedang dikunjungi
+	for _, nextLink := range links { //iterasi ke semua link yang ada di halaman yang sedang dikunjungi
+		subPath, found := DLS(nextLink, target, limit-1) //kunjungi node selanjutnya dan kurangi limit dengan 1 dan dapatkan nilai subpath dan nilai sudah ketemu path atau belum
+		if found {                                       //kalau ketemu
+			return append([]string{src}, subPath...), true //tambahkan nama halaman yang sedang dikunjungi sekarang ke subpath dan tandai pathnya ketemu
+		}
+	}
+	return nil, false //tidak ketemu pathnya
 }
