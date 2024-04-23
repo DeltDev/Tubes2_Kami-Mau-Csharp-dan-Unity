@@ -1,4 +1,4 @@
-package scrapercolly
+package main
 
 import (
 	"fmt"
@@ -11,8 +11,7 @@ type void struct{}
 
 var member void
 
-func ScrapeWikiLinks(initLink string) map[string]void {
-	linkSet := make(map[string]void)
+func main() {
 	c := colly.NewCollector(
 		colly.AllowedDomains("en.wikipedia.org"),
 	)
@@ -22,17 +21,13 @@ func ScrapeWikiLinks(initLink string) map[string]void {
 		for _, link := range links {
 
 			if validLink(link) {
-				linkSet[link] = member
+				fmt.Println(link)
 			}
 		}
 	})
 
-	c.Visit("https://en.wikipedia.org" + initLink)
-	for k := range linkSet {
-		fmt.Println(k)
-	}
+	c.Visit("https://en.wikipedia.org/Adolf_Hitler")
 
-	return linkSet
 }
 
 func validLink(link string) bool {

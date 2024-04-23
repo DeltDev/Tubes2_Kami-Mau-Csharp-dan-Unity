@@ -10,7 +10,7 @@ import (
 )
 
 type Response struct {
-    Path []string
+	Path []string
 }
 
 func bfs(startPage string, endPage string) []string {
@@ -34,7 +34,7 @@ func bfs(startPage string, endPage string) []string {
 				if !visited[link] {
 					if link == endPage {
 						fmt.Println("Found the end page!")
-						for i:=0; i < len(path); i++{
+						for i := 0; i < len(path); i++ {
 							if path[i][len(path[i])-1] == currentPage {
 								temp := make([]string, len(path[i]))
 								copy(temp, path[i])
@@ -45,7 +45,7 @@ func bfs(startPage string, endPage string) []string {
 						}
 					}
 
-					for i:=0; i < len(path); i++{
+					for i := 0; i < len(path); i++ {
 						if path[i][len(path[i])-1] == currentPage {
 							// fmt.Println("currentPage: ", currentPage)
 							temp := make([]string, len(path[i]))
@@ -56,7 +56,7 @@ func bfs(startPage string, endPage string) []string {
 							break
 						}
 					}
-				
+
 					queue = append(queue, link)
 				}
 			}
@@ -86,7 +86,7 @@ func getLinks(url string) []string {
 			// atau <ul> atau <li> dan lain lain
 			t := z.Token()
 			// contoh t.Attr adalah [{ href //en.m.wikipedia.org/w/index.php?title=Go_(programming_language)&mobileaction=toggle_view_mobile} { class noprint stopMobileRedirectToggle}]
-			// atau 
+			// atau
 			// contoh t.Data adalah a  atau ul atau li atau div, dan lain lain
 			// buat boolean checkHref
 			havekHref := false
@@ -96,14 +96,14 @@ func getLinks(url string) []string {
 					// fmt.Println(a)
 					// contoh a itu adalah { title AngularJS} atau { href /wiki/AngularJS} atau { href https://developer.wikimedia.org} atau dll
 					if a.Key == "href" {
-						if strings.HasPrefix(a.Val, "/wiki/") && !strings.Contains(a.Val, ":"){
-						havekHref = true
+						if strings.HasPrefix(a.Val, "/wiki/") && !strings.Contains(a.Val, ":") {
+							havekHref = true
 						}
 					}
 					if a.Key == "title" {
 						// tidak boleh ada titik dua
-						str	:= a.Val
-						if !strings.Contains(str, ":"){
+						str := a.Val
+						if !strings.Contains(str, ":") {
 							haveTitle = true
 						}
 					}
@@ -118,40 +118,40 @@ func getLinks(url string) []string {
 }
 
 func main() {
-    // Membuat server untuk frontend 
+	// Membuat server untuk frontend
 	// sekaligus inisialisasi awal empty array
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        var paths []string
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		var paths []string
 
-        data := Response{
-            Path: paths,
-        }
+		data := Response{
+			Path: paths,
+		}
 
-        tmpl, err := template.ParseFiles("../frontend/index.html")
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
+		tmpl, err := template.ParseFiles("../frontend/index.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-        err = tmpl.Execute(w, data)
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
+		err = tmpl.Execute(w, data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	})
 
-    // Proses mengambil data dari form
-    http.HandleFunc("/submit", func(w http.ResponseWriter, r *http.Request) {
-        // Mengecek data dari form
-        err := r.ParseForm()
-        if err != nil {
-            http.Error(w, "Failed to parse form data", http.StatusBadRequest)
-            return
-        }
+	// Proses mengambil data dari form
+	http.HandleFunc("/submit", func(w http.ResponseWriter, r *http.Request) {
+		// Mengecek data dari form
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "Failed to parse form data", http.StatusBadRequest)
+			return
+		}
 
-        // Mengambil value dan meletakkannya pada variable
-        start := strings.ReplaceAll(r.Form.Get("start"), " ", "_")
-        finish := strings.ReplaceAll(r.Form.Get("finish"), " ", "_")
+		// Mengambil value dan meletakkannya pada variable
+		start := strings.ReplaceAll(r.Form.Get("start"), " ", "_")
+		finish := strings.ReplaceAll(r.Form.Get("finish"), " ", "_")
 		algorithm := r.Form.Get("algorithm")
 
 		// Debug
@@ -161,28 +161,34 @@ func main() {
 		var path []string
 		if algorithm == "BFS" {
 			path = bfs(start, finish)
+		} else if algorithm == "IDS" {
+			IDS(start, finish, 0)
 		}
 
 		// Debug
 		fmt.Println(path)
 
 		// Passing ke HTML
-        data := Response{Path: path}
+		data := Response{Path: path}
 
-        tmpl, err := template.ParseFiles("../frontend/index.html")
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
+		tmpl, err := template.ParseFiles("../frontend/index.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-        err = tmpl.Execute(w, data)
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
+		err = tmpl.Execute(w, data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	})
 
-    // Menyalakan server
-    fmt.Println("Server is running on port 8080")
-    http.ListenAndServe(":8080", nil)
+	// Menyalakan server
+	fmt.Println("Server is running on port 8080")
+	http.ListenAndServe(":8080", nil)
+}
+
+func IDS(startPage string, endPage string, iteration int) {
+	fmt.Println(startPage, endPage, iteration)
 }
