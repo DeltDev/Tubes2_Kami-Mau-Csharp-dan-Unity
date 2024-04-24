@@ -104,7 +104,15 @@
 
         #result {
             color: #c2c0c2;
-            margin-top: 20px;
+            margin: 20px 2vw 20px 2vw;
+            background-color: #383838;
+
+            padding: 2%;
+            border-radius: 2%;
+        }
+
+        #result ol {
+            padding-left: 15px;
         }
     </style>
 </head>
@@ -146,12 +154,12 @@
     </div>
     <div id="result">
         <h3>Path:</h3>
-        <ul>
+        <ol>
             {{range .Path}}
-                <li>- {{.}}</li>
+                <li>{{.}}</li>
             {{end}}
-        </ul>
-        <h3>Degree: {{len .Path}}</h3>
+        </ol>
+        <h3>Degree: {{.Degree}}</h3>
     </div>
 
     <!-- Fungsi JavaScript untuk memberikan rekomendasi/sugesti Wikipedia Page -->

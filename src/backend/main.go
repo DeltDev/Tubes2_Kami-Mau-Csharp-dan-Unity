@@ -11,6 +11,7 @@ import (
 
 type Response struct {
 	Path []string
+	Degree int
 }
 
 func bfs(startPage string, endPage string) []string {
@@ -130,6 +131,7 @@ func main() {
 
 		data := Response{
 			Path: paths,
+			Degree: 0,
 		}
 
 		tmpl, err := template.ParseFiles("../frontend/index.html")
@@ -172,9 +174,15 @@ func main() {
 
 		// Debug
 		fmt.Println(path)
+		
+		// Degree
+		degree := len(path) - 1
 
 		// Passing ke HTML
-		data := Response{Path: path}
+		data := Response{
+			Path: path,
+			Degree: degree,
+		}
 
 		tmpl, err := template.ParseFiles("../frontend/index.html")
 		if err != nil {
