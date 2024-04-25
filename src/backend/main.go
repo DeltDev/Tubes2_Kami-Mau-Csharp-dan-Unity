@@ -205,7 +205,10 @@ func main() {
 
 func IDS(startPage string, endPage string) []string {
 	//debug
-	// links := getLinks(startPage)
+	links := scrapercolly.CollyGetLinks(startPage)
+	if len(links) == 0 { //handling error: halaman tidak ada di wikipedia
+		return []string{}
+	}
 	// fmt.Println(links)
 	path := []string{} //cari path hasil
 	found := false
@@ -232,7 +235,7 @@ func DLS(src string, target string, limit int) ([]string, bool) {
 	}
 
 	links := scrapercolly.CollyGetLinks(src) //dapatkan semua link yang ada di halaman yang sedang dikunjungi
-	for _, nextLink := range links {         //iterasi ke semua link yang ada di halaman yang sedang dikunjungi
+	for _, nextLink := range links { //iterasi ke semua link yang ada di halaman yang sedang dikunjungi
 		subPath, found := DLS(nextLink, target, limit-1) //kunjungi node selanjutnya dan kurangi limit dengan 1 dan dapatkan nilai subpath dan nilai sudah ketemu path atau belum
 		if found {                                       //kalau ketemu
 			return append([]string{src}, subPath...), true //tambahkan nama halaman yang sedang dikunjungi sekarang ke subpath dan tandai pathnya ketemu
