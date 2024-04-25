@@ -1,4 +1,4 @@
-package main
+package scrapercolly
 
 import (
 	"fmt"
@@ -7,35 +7,33 @@ import (
 	"github.com/gocolly/colly"
 )
 
-type void struct{}
+func CollyGetLinks(url string) []string {
+	url = "https://en.wikipedia.org/wiki/" + url
+	c := colly.NewCollector()
 
-var member void
+	links := []string{}
+	alreadyAdded := make(map[string]bool)
 
-func main() {
-	c := colly.NewCollector(
-		colly.AllowedDomains("en.wikipedia.org"),
-	)
+	c.OnRequest(func(r *colly.Request) {
+		fmt.Println("Visiting: ", r.URL)
+	})
 
-	c.OnHTML(".mw-body-content", func(e *colly.HTMLElement) {
-		links := e.ChildAttrs("a", "href")
-		for _, link := range links {
+	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+		link := e.Attr("href")
 
-			if validLink(link) {
-				fmt.Println(link)
+		if strings.HasPrefix(link, "/wiki/") && !strings.Contains(link, ":") && (link != "/wiki/Main_Page") {
+			if !alreadyAdded[link] {
+				links = append(links, strings.TrimPrefix(link, "/wiki/"))
+				alreadyAdded[link] = true
 			}
 		}
 	})
 
-	c.Visit("https://en.wikipedia.org/Adolf_Hitler")
-
-}
-
-func validLink(link string) bool {
-	if !strings.HasPrefix(link, "/wiki/") {
-		return false
+	err := c.Visit(url)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return nil
 	}
-	if strings.Contains(link[len("/wiki/"):], ":") {
-		return false
-	}
-	return true
+
+	return links
 }

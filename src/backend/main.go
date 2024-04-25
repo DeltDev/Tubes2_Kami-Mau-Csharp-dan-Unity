@@ -1,6 +1,7 @@
 package main
 
 import (
+	"backend/scrapercolly"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 )
 
 type Response struct {
-	Path []string
+	Path   []string
 	Degree int
 }
 
@@ -30,7 +31,7 @@ func bfs(startPage string, endPage string) []string {
 		queue = queue[1:]
 		if !visited[currentPage] {
 			visited[currentPage] = true
-			links := getLinks(currentPage)
+			links := scrapercolly.CollyGetLinks(currentPage)
 			fmt.Println("links: ", links)
 			for _, link := range links {
 				if !visited[link] {
@@ -130,7 +131,7 @@ func main() {
 		var paths []string
 
 		data := Response{
-			Path: paths,
+			Path:   paths,
 			Degree: 0,
 		}
 
@@ -174,13 +175,13 @@ func main() {
 
 		// Debug
 		fmt.Println(path)
-		
+
 		// Degree
 		degree := len(path) - 1
 
 		// Passing ke HTML
 		data := Response{
-			Path: path,
+			Path:   path,
 			Degree: degree,
 		}
 
@@ -220,7 +221,7 @@ func IDS(startPage string, endPage string) []string {
 }
 
 func DLS(src string, target string, limit int) ([]string, bool) {
-	fmt.Println("Halaman yang dikunjungi sekarang: ",src,"Halaman tujuan: ", target, "Batas kedalaman iterasi: ", limit)
+	fmt.Println("Halaman yang dikunjungi sekarang: ", src, "Halaman tujuan: ", target, "Batas kedalaman iterasi: ", limit)
 	if src == target { //kalau halaman yang divisit sekarang sama dengan halaman yang dicari
 		ret := []string{src} //masukin ke path
 		return ret, true     //artinya sudah ketemu pathnya
@@ -230,8 +231,8 @@ func DLS(src string, target string, limit int) ([]string, bool) {
 		return nil, false //tidak ketemu
 	}
 
-	links := getLinks(src)           //dapatkan semua link yang ada di halaman yang sedang dikunjungi
-	for _, nextLink := range links { //iterasi ke semua link yang ada di halaman yang sedang dikunjungi
+	links := scrapercolly.CollyGetLinks(src) //dapatkan semua link yang ada di halaman yang sedang dikunjungi
+	for _, nextLink := range links {         //iterasi ke semua link yang ada di halaman yang sedang dikunjungi
 		subPath, found := DLS(nextLink, target, limit-1) //kunjungi node selanjutnya dan kurangi limit dengan 1 dan dapatkan nilai subpath dan nilai sudah ketemu path atau belum
 		if found {                                       //kalau ketemu
 			return append([]string{src}, subPath...), true //tambahkan nama halaman yang sedang dikunjungi sekarang ke subpath dan tandai pathnya ketemu
