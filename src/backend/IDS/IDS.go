@@ -15,9 +15,9 @@ func IDS(startPage string, endPage string) []string {
 	}
 	path := []string{}
 
-	for iteration := 1; iteration <= 9; iteration += 3 { //iterasi fragmentasi IDS multithreading (fragmentasi: IDS dipecah menjadi asumsi 1-9 degree)
-		fmt.Println("Fragmen dari: ",iteration," sampai: ",iteration+2)
-		path = IDSFragment(startPage, endPage, iteration, iteration+2)
+	for iteration := 1; iteration <= 8; iteration += 2 { //iterasi fragmentasi IDS multithreading (fragmentasi: IDS dipecah menjadi asumsi 1-9 degree)
+		fmt.Println("Fragmen dari: ",iteration," sampai: ",iteration+1)
+		path = IDSFragment(startPage, endPage, iteration, iteration+1)
 		if path != nil { //kalau sudah ketemu path dari fragmen, jangan dilanjutkan IDSnya
 			break
 		}
@@ -67,9 +67,9 @@ func DLS(src string, target string, limit int, visited map[string]bool, stopExpl
 
 func IDSFragment(startPage string, endPage string, startIdx int, endIdx int) []string {
 	var wg sync.WaitGroup
-	wg.Add(3)
+	wg.Add(2)
 
-	ch := make(chan []string, 3)
+	ch := make(chan []string, 2)
 	stopExplore := make(chan bool, 1)
 	for iteration := startIdx; iteration <= endIdx; iteration++ { //tambah kedalaman terus sampai ketemu pathnya
 		go func(d int) {
@@ -86,7 +86,7 @@ func IDSFragment(startPage string, endPage string, startIdx int, endIdx int) []s
 
 	wg.Wait()
 
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 2; i++ {
 		path := <-ch
 
 		if path != nil {
