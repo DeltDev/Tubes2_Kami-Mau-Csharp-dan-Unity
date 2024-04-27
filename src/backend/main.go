@@ -91,7 +91,7 @@ func main() {
 
 		// Debug
 		fmt.Println(path)
-		fmt.Println("Jumlah File yang dikunjungi BFS: " nFileVisited)
+		fmt.Println("Jumlah File yang dikunjungi BFS: ", nFileVisited)
 		// fmt.Println("Duration:", duration)
 
 		// Passing ke HTML
