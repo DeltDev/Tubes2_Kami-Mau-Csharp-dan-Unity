@@ -16,13 +16,11 @@ import (
 )
 
 type Response struct {
-	Path   []string
+	Path     []string
 	PathLink []string
-	Degree int
+	Degree   int
 	Duration time.Duration
 }
-
-
 
 func removeRedundantMaphashtag(data map[string][]string) map[string][]string {
 	result := make(map[string][]string)
@@ -82,179 +80,178 @@ func removeRedundant(array []string) []string {
 	return result
 }
 
-
 func bfs(startPage string, endPage string) []string {
 
- path := [][]string{{startPage}}
- queue := []string{startPage}
- visited := make(map[string]bool)
- visited[startPage] = false
- if startPage == endPage {
-  fmt.Println("Found the end page!")
-  fmt.Println("Path: ", startPage)
-  return []string{startPage}
- }
- var tempqueue []string
- var wannaGetLinks []string
+	path := [][]string{{startPage}}
+	queue := []string{startPage}
+	visited := make(map[string]bool)
+	visited[startPage] = false
+	if startPage == endPage {
+		fmt.Println("Found the end page!")
+		fmt.Println("Path: ", startPage)
+		return []string{startPage}
+	}
+	var tempqueue []string
+	var wannaGetLinks []string
 
- fmt.Println("flag 1")
- for len(queue) >= 0 {
-        fmt.Println("flag 2")
-        if len(queue) == 0 {
+	fmt.Println("flag 1")
+	for len(queue) >= 0 {
+		fmt.Println("flag 2")
+		if len(queue) == 0 {
 
-            if len(tempqueue) == 0 {
-                fmt.Println("queue dan tempqueue habis")
-                return []string{}
-            }
+			if len(tempqueue) == 0 {
+				fmt.Println("queue dan tempqueue habis")
+				return []string{}
+			}
 
-            fmt.Println("queue habis")
-            queue = append(queue, tempqueue...)
-            tempqueue = []string{}
-            fmt.Println("panjang queue: ", len(queue))
-            fmt.Println("panjang tempqueue reset: ", len(tempqueue))
-        }
+			fmt.Println("queue habis")
+			queue = append(queue, tempqueue...)
+			tempqueue = []string{}
+			fmt.Println("panjang queue: ", len(queue))
+			fmt.Println("panjang tempqueue reset: ", len(tempqueue))
+		}
 
-        if len(queue) > 0 {
-            if len(queue) > 4000 {
-                wannaGetLinks = queue[:4000]
-            } else {
-                wannaGetLinks = queue
-            }
-            queue = queue[len(wannaGetLinks):]
+		if len(queue) > 0 {
+			if len(queue) > 4000 {
+				wannaGetLinks = queue[:4000]
+			} else {
+				wannaGetLinks = queue
+			}
+			queue = queue[len(wannaGetLinks):]
 
-            // fmt.Println("getLink jalan=============================================")
-            parentAndChildMap := getLinks(wannaGetLinks)
-            fmt.Println("getLink selesai")
-            fmt.Println("panjang parentAndChildMap: ", len(parentAndChildMap))
-            fmt.Println("panjang queue: ", len(queue))
-            // fmt.Println("parentAndChildMap: Asli ****************************** ", parentAndChildMap)
-            parentAndChildMap = removeRedundantMap(parentAndChildMap)
-            parentAndChildMap = removeRedundantMaphashtag(parentAndChildMap)
+			// fmt.Println("getLink jalan=============================================")
+			parentAndChildMap := getLinks(wannaGetLinks)
+			fmt.Println("getLink selesai")
+			fmt.Println("panjang parentAndChildMap: ", len(parentAndChildMap))
+			fmt.Println("panjang queue: ", len(queue))
+			// fmt.Println("parentAndChildMap: Asli ****************************** ", parentAndChildMap)
+			parentAndChildMap = removeRedundantMap(parentAndChildMap)
+			parentAndChildMap = removeRedundantMaphashtag(parentAndChildMap)
 
-            for parent, arrChild := range parentAndChildMap{
-                //fmt.Println("parent: ", parent)
-                if parent == "Indonesia"{
-                    fmt.Println("================================")
-                }
-                for _, l := range arrChild {
-                    if !visited[l]{
-                        visited[l] = true
-                        tempqueue = append(tempqueue, l)
-                        foundParent := false
-                        i := 0
-                        for !foundParent {
-                            if path[i][len(path[i])-1] == parent {
-                                foundParent = true
-                                newPath := make([]string, len(path[i]))
-                                copy(newPath, path[i])
-                                newPath = append(newPath, l)
-                                path = append(path, newPath)
-                                if l == endPage {
-                                    fmt.Println("Found the end page!")
-                                    fmt.Println("Path: ", newPath)
-                                    return newPath
-                                }
-                            }
-                            i++
-                        }
+			for parent, arrChild := range parentAndChildMap {
+				//fmt.Println("parent: ", parent)
+				if parent == "Indonesia" {
+					fmt.Println("================================")
+				}
+				for _, l := range arrChild {
+					if !visited[l] {
+						visited[l] = true
+						tempqueue = append(tempqueue, l)
+						foundParent := false
+						i := 0
+						for !foundParent {
+							if path[i][len(path[i])-1] == parent {
+								foundParent = true
+								newPath := make([]string, len(path[i]))
+								copy(newPath, path[i])
+								newPath = append(newPath, l)
+								path = append(path, newPath)
+								if l == endPage {
+									fmt.Println("Found the end page!")
+									fmt.Println("Path: ", newPath)
+									return newPath
+								}
+							}
+							i++
+						}
 
-                    }
+					}
 
-                }
-            }
-        }
- }
- return []string{}
+				}
+			}
+		}
+	}
+	return []string{}
 }
 
 type SafeLinksMap struct {
-    sync.Map
-    mux sync.Mutex // Mutex for SafeLinksMap
+	sync.Map
+	mux sync.Mutex // Mutex for SafeLinksMap
 }
 
 func (s *SafeLinksMap) StoreLinks(key string, value []string) {
-    s.mux.Lock()
-    defer s.mux.Unlock()
-    s.Store(key, value)
+	s.mux.Lock()
+	defer s.mux.Unlock()
+	s.Store(key, value)
 }
 
 func (s *SafeLinksMap) LoadLinks(key string) ([]string, bool) {
-    value, ok := s.Load(key)
-    if !ok {
-        return nil, false
-    }
-    return value.([]string), true
+	value, ok := s.Load(key)
+	if !ok {
+		return nil, false
+	}
+	return value.([]string), true
 }
 
 func getLinks(juduls []string) map[string][]string {
-    results := SafeLinksMap{}
+	results := SafeLinksMap{}
 
-    c := colly.NewCollector(
-        colly.MaxDepth(1),
-    )
-    c.Limit(&colly.LimitRule{DomainGlob: "*", Parallelism: 4000})
+	c := colly.NewCollector(
+		colly.MaxDepth(1),
+	)
+	c.Limit(&colly.LimitRule{DomainGlob: "*", Parallelism: 4000})
 
-    isExist := SafeLinksMap{}
+	isExist := SafeLinksMap{}
 
-    q, _ := queue.New(
-        22,
-        &queue.InMemoryQueueStorage{MaxSize: 1000000},
-    )
+	q, _ := queue.New(
+		22,
+		&queue.InMemoryQueueStorage{MaxSize: 1000000},
+	)
 
-    for _, judul := range juduls {
-        q.AddURL("https://en.wikipedia.org/wiki/" + judul)
-        results.StoreLinks(judul, make([]string, 0)) // Initialize with empty slice
-    }
+	for _, judul := range juduls {
+		q.AddURL("https://en.wikipedia.org/wiki/" + judul)
+		results.StoreLinks(judul, make([]string, 0)) // Initialize with empty slice
+	}
 
-    c.OnHTML("a[href]", func(e *colly.HTMLElement) {
-        link := e.Attr("href")
-        if strings.HasPrefix(link, "/wiki/") && !strings.Contains(link, ":") && link != "/wiki/Main_Page" {
-            if _, ok := isExist.Load(link); !ok {
-                isExist.Store(link, true)
-                link := strings.TrimPrefix(link, "/wiki/")
-                judul := e.Request.URL.String()
-                judul = strings.TrimPrefix(judul, "https://en.wikipedia.org/wiki/")
-                value, ok := results.LoadLinks(judul)
-                if ok {
-                    links := value
-                    if !contains(links, link) { // Check if link already exists
-                        links = append(links, link)
-                        results.StoreLinks(judul, links)
-                    }
-                }
-            }
-        }
-    })
+	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+		link := e.Attr("href")
+		if strings.HasPrefix(link, "/wiki/") && !strings.Contains(link, ":") && link != "/wiki/Main_Page" {
+			if _, ok := isExist.Load(link); !ok {
+				isExist.Store(link, true)
+				link := strings.TrimPrefix(link, "/wiki/")
+				judul := e.Request.URL.String()
+				judul = strings.TrimPrefix(judul, "https://en.wikipedia.org/wiki/")
+				value, ok := results.LoadLinks(judul)
+				if ok {
+					links := value
+					if !contains(links, link) { // Check if link already exists
+						links = append(links, link)
+						results.StoreLinks(judul, links)
+					}
+				}
+			}
+		}
+	})
 
-    c.OnRequest(func(r *colly.Request) {
-        // fmt.Println("visiting", r.URL)
-    })
+	c.OnRequest(func(r *colly.Request) {
+		// fmt.Println("visiting", r.URL)
+	})
 
-    err := q.Run(c)
+	err := q.Run(c)
 
-    if err != nil {
-        return nil
-    }
+	if err != nil {
+		return nil
+	}
 
-    c.Wait()
+	c.Wait()
 
-    hasil := make(map[string][]string)
-    results.Range(func(key, value interface{}) bool {
-        hasil[key.(string)] = append([]string{}, value.([]string)...)
-        return true
-    })
+	hasil := make(map[string][]string)
+	results.Range(func(key, value interface{}) bool {
+		hasil[key.(string)] = append([]string{}, value.([]string)...)
+		return true
+	})
 
-    return hasil
+	return hasil
 }
 
 // Helper function to check if a slice contains a string
 func contains(slice []string, str string) bool {
-    for _, s := range slice {
-        if s == str {
-            return true
-        }
-    }
-    return false
+	for _, s := range slice {
+		if s == str {
+			return true
+		}
+	}
+	return false
 }
 
 /*func bfs(startPage string, endPage string) []string {
@@ -373,9 +370,9 @@ func main() {
 		var paths []string
 
 		data := Response{
-			Path: paths,
+			Path:     paths,
 			PathLink: paths,
-			Degree: 0,
+			Degree:   0,
 			Duration: 0,
 		}
 
@@ -432,7 +429,7 @@ func main() {
 
 		// Degree
 		degree := len(pathLink) - 1
-		
+
 		// Duration
 		duration := endTime.Sub(startTime)
 
@@ -442,9 +439,9 @@ func main() {
 
 		// Passing ke HTML
 		data := Response{
-			Path: path,
+			Path:     path,
 			PathLink: pathLink,
-			Degree: degree,
+			Degree:   degree,
 			Duration: duration,
 		}
 
@@ -467,7 +464,7 @@ func main() {
 }
 
 func IDS(startPage string, endPage string) []string {
-	if startPage == endPage{ //cek apakah awal dan akhirnya sama
+	if startPage == endPage { //cek apakah awal dan akhirnya sama
 		return []string{startPage}
 	}
 	//debug]]
@@ -478,8 +475,8 @@ func IDS(startPage string, endPage string) []string {
 	// fmt.Println(links)
 	path := []string{}
 
-	for iteration := 0; iteration<=8; iteration+=2{
-		path = IDSFragment(startPage,endPage,iteration,iteration+1);
+	for iteration := 0; iteration <= 8; iteration += 3 {
+		path = IDSFragment(startPage, endPage, iteration, iteration+2)
 		if path != nil {
 			break
 		}
@@ -523,11 +520,11 @@ func DLS(src string, target string, limit int, visited map[string]bool, stopExpl
 	return nil, false //tidak ketemu pathnya
 }
 
-func IDSFragment(startPage string, endPage string, startIdx int, endIdx int) ([]string){
+func IDSFragment(startPage string, endPage string, startIdx int, endIdx int) []string {
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
 
-	ch := make(chan []string, 2)
+	ch := make(chan []string, 3)
 	stopExplore := make(chan bool, 1)
 	for iteration := startIdx; iteration <= endIdx; iteration++ { //tambah kedalaman terus sampai ketemu pathnya
 		go func(d int) {
@@ -544,7 +541,7 @@ func IDSFragment(startPage string, endPage string, startIdx int, endIdx int) ([]
 
 	wg.Wait()
 
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 3; i++ {
 		path := <-ch
 
 		if path != nil {
