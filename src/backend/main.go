@@ -215,6 +215,9 @@ func main() {
 }
 
 func IDS(startPage string, endPage string) []string {
+	if startPage == endPage{ //cek apakah awal dan akhirnya sama
+		return []string{startPage}
+	}
 	//debug
 	links := scrapercolly.CollyGetLinks(startPage)
 	if len(links) == 0 { //handling error: halaman tidak ada di wikipedia
