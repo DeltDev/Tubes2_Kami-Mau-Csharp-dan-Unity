@@ -172,9 +172,9 @@
     <div id="result">
         <h3>Path:</h3>
         <ol>
-            {{range .Path}}
+            {{range $i, $element := .Path}}
                 <li>
-                    <a href="https://en.wikipedia.org/wiki/{{.}}">{{.}}</a>
+                    <a href="https://en.wikipedia.org/wiki/{{index $.PathLink $i}}">{{index $.Path $i}}</a>
                 </li>
             {{end}}
         </ol>

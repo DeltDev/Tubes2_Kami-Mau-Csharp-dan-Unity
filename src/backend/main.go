@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -14,6 +15,7 @@ import (
 
 type Response struct {
 	Path   []string
+	PathLink []string
 	Degree int
 	Duration time.Duration
 }
@@ -25,8 +27,8 @@ func bfs(startPage string, endPage string) []string {
 	visited := make(map[string]bool)
 	visited[startPage] = false
 	if startPage == endPage {
-		fmt.Println("Found the end page!")
-		fmt.Println("Path: ", startPage)
+		// fmt.Println("Found the end page!")
+		// fmt.Println("Path: ", startPage)
 		return []string{startPage}
 	}
 	for len(queue) > 0 {
@@ -35,11 +37,11 @@ func bfs(startPage string, endPage string) []string {
 		if !visited[currentPage] {
 			visited[currentPage] = true
 			links := scrapercolly.CollyGetLinks(currentPage)
-			fmt.Println("links: ", links)
+			// fmt.Println("links: ", links)
 			for _, link := range links {
 				if !visited[link] {
 					if link == endPage {
-						fmt.Println("Found the end page!")
+						// fmt.Println("Found the end page!")
 						for i := 0; i < len(path); i++ {
 							if path[i][len(path[i])-1] == currentPage {
 								temp := make([]string, len(path[i]))
@@ -57,7 +59,7 @@ func bfs(startPage string, endPage string) []string {
 							temp := make([]string, len(path[i]))
 							copy(temp, path[i])
 							temp = append(temp, link)
-							fmt.Println("tempAkhir: ", temp)
+							// fmt.Println("tempAkhir: ", temp)
 							path = append(path, temp)
 							break
 						}
@@ -75,7 +77,7 @@ func getLinks(url string) []string {
 	url = "https://en.wikipedia.org/wiki/" + url
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println("Error: ", err)
+		// fmt.Println("Error: ", err)
 		return nil
 	}
 	defer resp.Body.Close()
@@ -134,7 +136,8 @@ func main() {
 		var paths []string
 
 		data := Response{
-			Path:   paths,
+			Path: paths,
+			PathLink: paths,
 			Degree: 0,
 			Duration: 0,
 		}
@@ -162,8 +165,8 @@ func main() {
 		}
 
 		// Mengambil value dan meletakkannya pada variable
-		start := strings.ReplaceAll(r.Form.Get("start"), " ", "_")
-		finish := strings.ReplaceAll(r.Form.Get("finish"), " ", "_")
+		start := url.QueryEscape(strings.ReplaceAll(r.Form.Get("start"), " ", "_"))
+		finish := url.QueryEscape(strings.ReplaceAll(r.Form.Get("finish"), " ", "_"))
 		algorithm := r.Form.Get("algorithm")
 
 		// Debug
@@ -171,27 +174,39 @@ func main() {
 
 		// Mencari hasil
 		var path []string
+		var pathLink []string
 		startTime := time.Now()
 		if algorithm == "BFS" {
-			path = bfs(start, finish)
+			pathLink = bfs(start, finish)
 		} else if algorithm == "IDS" {
-			path = IDS(start, finish)
+			pathLink = IDS(start, finish)
 		}
 		endTime := time.Now()
 
+		// Judul
+		for _, link := range pathLink {
+			decodedLink, err := url.QueryUnescape(link)
+			if err != nil {
+				fmt.Println("Error decoding link:", err)
+				return
+			}
+			path = append(path, decodedLink)
+		}
+
 		// Degree
-		degree := len(path) - 1
+		degree := len(pathLink) - 1
 		
 		// Duration
 		duration := endTime.Sub(startTime)
 		
 		// Debug
 		fmt.Println(path)
-		fmt.Println("Duration:", duration)
+		// fmt.Println("Duration:", duration)
 
 		// Passing ke HTML
 		data := Response{
-			Path:   path,
+			Path: path,
+			PathLink: pathLink,
 			Degree: degree,
 			Duration: duration,
 		}
@@ -215,7 +230,7 @@ func main() {
 }
 
 func IDS(startPage string, endPage string) []string {
-	//debug
+	// debug
 	links := scrapercolly.CollyGetLinks(startPage)
 	if len(links) == 0 { //handling error: halaman tidak ada di wikipedia
 		return []string{}
@@ -244,14 +259,14 @@ func IDS(startPage string, endPage string) []string {
 		path := <-ch
 
 		if path != nil {
-			fmt.Println(path)
+			// fmt.Println(path)
 		}
 	}
 	return nil //return path yang udah ketemu
 }
 
 func DLS(src string, target string, limit int, visited map[string]bool) ([]string, bool) {
-	fmt.Println("Halaman yang dikunjungi sekarang: ", src, "Halaman tujuan: ", target, "Batas kedalaman iterasi: ", limit)
+	// fmt.Println("Halaman yang dikunjungi sekarang: ", src, "Halaman tujuan: ", target, "Batas kedalaman iterasi: ", limit)
 	if src == target { //kalau halaman yang divisit sekarang sama dengan halaman yang dicari
 		ret := []string{src} //masukin ke path
 		return ret, true     //artinya sudah ketemu pathnya
