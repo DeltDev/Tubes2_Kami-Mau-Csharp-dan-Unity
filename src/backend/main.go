@@ -198,7 +198,7 @@ func main() {
 		
 		// Duration
 		duration := endTime.Sub(startTime)
-		
+
 		// Debug
 		fmt.Println(path)
 		// fmt.Println("Duration:", duration)
@@ -230,7 +230,10 @@ func main() {
 }
 
 func IDS(startPage string, endPage string) []string {
-	// debug
+	if startPage == endPage{ //cek apakah awal dan akhirnya sama
+		return []string{startPage}
+	}
+	//debug]]
 	links := scrapercolly.CollyGetLinks(startPage)
 	if len(links) == 0 { //handling error: halaman tidak ada di wikipedia
 		return []string{}
@@ -240,13 +243,14 @@ func IDS(startPage string, endPage string) []string {
 	wg.Add(8)
 
 	ch := make(chan []string, 8)
-
+	stopExplore := make(chan bool, 1)
 	for iteration := 0; iteration < 8; iteration++ { //tambah kedalaman terus sampai ketemu pathnya
 		go func(d int) {
 			defer wg.Done()
-			path, found := DLS(startPage, endPage, d, map[string]bool{})
+			path, found := DLS(startPage, endPage, d, map[string]bool{}, stopExplore)
 			if found {
 				ch <- path
+				stopExplore <- true
 				return
 			}
 			ch <- nil
@@ -259,14 +263,17 @@ func IDS(startPage string, endPage string) []string {
 		path := <-ch
 
 		if path != nil {
-			// fmt.Println(path)
+			if path[0] == startPage && path[len(path)-1] == endPage {
+				return path
+			}
 		}
 	}
 	return nil //return path yang udah ketemu
 }
 
-func DLS(src string, target string, limit int, visited map[string]bool) ([]string, bool) {
-	// fmt.Println("Halaman yang dikunjungi sekarang: ", src, "Halaman tujuan: ", target, "Batas kedalaman iterasi: ", limit)
+func DLS(src string, target string, limit int, visited map[string]bool, stopExplore chan bool) ([]string, bool) {
+	fmt.Println("Halaman yang dikunjungi sekarang: ", src, "Halaman tujuan: ", target, "Batas kedalaman iterasi: ", limit)
+	visited[src] = true
 	if src == target { //kalau halaman yang divisit sekarang sama dengan halaman yang dicari
 		ret := []string{src} //masukin ke path
 		return ret, true     //artinya sudah ketemu pathnya
@@ -282,9 +289,16 @@ func DLS(src string, target string, limit int, visited map[string]bool) ([]strin
 			continue
 		}
 		visited[nextLink] = true
-		subPath, found := DLS(nextLink, target, limit-1, visited) //kunjungi node selanjutnya dan kurangi limit dengan 1 dan dapatkan nilai subpath dan nilai sudah ketemu path atau belum
-		if found {                                                //kalau ketemu
-			return append([]string{src}, subPath...), true //tambahkan nama halaman yang sedang dikunjungi sekarang ke subpath dan tandai pathnya ketemu
+		select {
+		case explored := <-stopExplore:
+			if explored {
+				return nil, true
+			}
+		default:
+			subPath, found := DLS(nextLink, target, limit-1, visited, stopExplore) //kunjungi node selanjutnya dan kurangi limit dengan 1 dan dapatkan nilai subpath dan nilai sudah ketemu path atau belum
+			if found {                                                             //kalau ketemu
+				return append([]string{src}, subPath...), true //tambahkan nama halaman yang sedang dikunjungi sekarang ke subpath dan tandai pathnya ketemu
+			}
 		}
 
 		delete(visited, nextLink)
