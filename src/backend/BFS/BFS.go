@@ -29,6 +29,7 @@ func BFS(startPage string, endPage string) ([]string, int) {
 			}
 
 			fmt.Println("queue habis")
+			tempqueue = scraper.SortStringsBySim(endPage,tempqueue)
 			queue = append(queue, tempqueue...)
 			tempqueue = []string{}
 			fmt.Println("panjang queue: ", len(queue))
