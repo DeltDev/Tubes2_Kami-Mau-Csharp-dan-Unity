@@ -239,36 +239,16 @@ func IDS(startPage string, endPage string) []string {
 		return []string{}
 	}
 	// fmt.Println(links)
-	var wg sync.WaitGroup
-	wg.Add(8)
+	path := []string{}
 
-	ch := make(chan []string, 8)
-	stopExplore := make(chan bool, 1)
-	for iteration := 0; iteration < 8; iteration++ { //tambah kedalaman terus sampai ketemu pathnya
-		go func(d int) {
-			defer wg.Done()
-			path, found := DLS(startPage, endPage, d, map[string]bool{}, stopExplore)
-			if found {
-				ch <- path
-				stopExplore <- true
-				return
-			}
-			ch <- nil
-		}(iteration)
-	}
-
-	wg.Wait()
-
-	for i := 0; i < 8; i++ {
-		path := <-ch
-
+	for iteration := 0; iteration<=8; iteration+=2{
+		path = IDSFragment(startPage,endPage,iteration,iteration+1);
 		if path != nil {
-			if path[0] == startPage && path[len(path)-1] == endPage {
-				return path
-			}
+			break
 		}
 	}
-	return nil //return path yang udah ketemu
+
+	return path
 }
 
 func DLS(src string, target string, limit int, visited map[string]bool, stopExplore chan bool) ([]string, bool) {
@@ -304,4 +284,37 @@ func DLS(src string, target string, limit int, visited map[string]bool, stopExpl
 		delete(visited, nextLink)
 	}
 	return nil, false //tidak ketemu pathnya
+}
+
+func IDSFragment(startPage string, endPage string, startIdx int, endIdx int) ([]string){
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	ch := make(chan []string, 2)
+	stopExplore := make(chan bool, 1)
+	for iteration := startIdx; iteration <= endIdx; iteration++ { //tambah kedalaman terus sampai ketemu pathnya
+		go func(d int) {
+			defer wg.Done()
+			path, found := DLS(startPage, endPage, d, map[string]bool{}, stopExplore)
+			if found {
+				ch <- path
+				stopExplore <- true
+				return
+			}
+			ch <- nil
+		}(iteration)
+	}
+
+	wg.Wait()
+
+	for i := 0; i < 2; i++ {
+		path := <-ch
+
+		if path != nil {
+			if path[0] == startPage && path[len(path)-1] == endPage {
+				return path
+			}
+		}
+	}
+	return nil //return path yang udah ketemu
 }
