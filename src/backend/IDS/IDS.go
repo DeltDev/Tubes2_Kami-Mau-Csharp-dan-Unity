@@ -1,9 +1,9 @@
 package IDS
 
-import(
+import (
+	"backend/scraper"
 	"fmt"
 	"sync"
-	"backend/scraper"
 )
 func IDS(startPage string, endPage string) []string {
 	if startPage == endPage { //cek apakah awal dan akhirnya sama
@@ -16,6 +16,7 @@ func IDS(startPage string, endPage string) []string {
 	path := []string{}
 
 	for iteration := 1; iteration <= 9; iteration += 3 { //iterasi fragmentasi IDS multithreading (fragmentasi: IDS dipecah menjadi asumsi 1-9 degree)
+		fmt.Println("Fragmen dari: ",iteration," sampai: ",iteration+2)
 		path = IDSFragment(startPage, endPage, iteration, iteration+2)
 		if path != nil { //kalau sudah ketemu path dari fragmen, jangan dilanjutkan IDSnya
 			break
@@ -26,7 +27,6 @@ func IDS(startPage string, endPage string) []string {
 }
 
 func DLS(src string, target string, limit int, visited map[string]bool, stopExplore chan bool) ([]string, bool) {
-	fmt.Println("Halaman yang dikunjungi sekarang: ", src, "Halaman tujuan: ", target, "Batas kedalaman iterasi: ", limit)
 	visited[src] = true //tandai sudah pernah divisit
 	if src == target { //kalau halaman yang divisit sekarang sama dengan halaman yang dicari
 		ret := []string{src} //masukin ke path
@@ -38,8 +38,11 @@ func DLS(src string, target string, limit int, visited map[string]bool, stopExpl
 	}
 
 	links := scraper.GetLinksArr(src) //dapatkan semua link yang ada di halaman yang sedang dikunjungi
-	links = scraper.RemoveRedundant(links) //hilangkan semua link yang redundant
-	links = scraper.RemoveRedundanthashtag(links) //hilangkan semua link yang mengandung # (karena hanya merupakan redirect ke halaman yang sama)
+	// links = scraper.RemoveRedundant(links) //hilangkan semua link yang redundant
+	// links = scraper.RemoveRedundanthashtag(links) //hilangkan semua link yang mengandung # (karena hanya merupakan redirect ke halaman yang sama)
+	links = scraper.SortStringsBySim(target,links) //urutkan semua link berdasarkan kemiripan dengan target
+	fmt.Println(target)
+	fmt.Println(links)
 	for _, nextLink := range links {         //iterasi ke semua link yang ada di halaman yang sedang dikunjungi
 		if visited[nextLink] {
 			continue

@@ -2,11 +2,12 @@ package scraper
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
+
 	"github.com/gocolly/colly"
 	"github.com/gocolly/colly/queue"
-	
 )
 
 func GetLinksArr(url string) []string {
@@ -186,4 +187,52 @@ func Contains(slice []string, str string) bool {
 		}
 	}
 	return false
+}
+
+func LevenshteinDist(a, b string) int{ //menentukan nilai kemiripan string dengan Levenshtein Distance
+	m := len(a) + 1
+	n := len(b) + 1
+	dp := make([][]int, m)
+	for i := range dp {
+		dp[i] = make([]int, n)
+	}
+
+	for i := 0; i < m; i++ {
+		dp[i][0] = i
+	}
+	for j := 0; j < n; j++ {
+		dp[0][j] = j
+	}
+
+	for i := 1; i < m; i++ {
+		for j := 1; j < n; j++ {
+				if a[i-1] == b[j-1] {
+					dp[i][j] = dp[i-1][j-1]
+				} else {
+					min := dp[i-1][j]
+				if dp[i][j-1] < min {
+          			min = dp[i][j-1]
+        		}
+        		if dp[i-1][j-1] < min {
+          			min = dp[i-1][j-1]
+        		}
+        		dp[i][j] = min + 1
+			}
+		}
+	}
+  return dp[m-1][n-1]
+}
+
+func StringAscending(a,b,query string) bool{
+	distA := LevenshteinDist(query, a)
+  	distB := LevenshteinDist(query, b)
+  	return distA < distB
+}
+
+func SortStringsBySim(query string, linkList []string)[]string{
+	strings := linkList
+	sort.Slice(strings, func(i,j int) bool{
+		return StringAscending(strings[i],strings[j],query)
+	})
+	return strings
 }
