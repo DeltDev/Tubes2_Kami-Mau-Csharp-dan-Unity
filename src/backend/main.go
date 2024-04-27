@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"golang.org/x/net/html"
 )
@@ -14,6 +15,7 @@ import (
 type Response struct {
 	Path   []string
 	Degree int
+	Duration time.Duration
 }
 
 func bfs(startPage string, endPage string) []string {
@@ -134,6 +136,7 @@ func main() {
 		data := Response{
 			Path:   paths,
 			Degree: 0,
+			Duration: 0,
 		}
 
 		tmpl, err := template.ParseFiles("../frontend/index.html")
@@ -168,22 +171,29 @@ func main() {
 
 		// Mencari hasil
 		var path []string
+		startTime := time.Now()
 		if algorithm == "BFS" {
 			path = bfs(start, finish)
 		} else if algorithm == "IDS" {
 			path = IDS(start, finish)
 		}
-
-		// Debug
-		fmt.Println(path)
+		endTime := time.Now()
 
 		// Degree
 		degree := len(path) - 1
+		
+		// Duration
+		duration := endTime.Sub(startTime)
+		
+		// Debug
+		fmt.Println(path)
+		fmt.Println("Duration:", duration)
 
 		// Passing ke HTML
 		data := Response{
 			Path:   path,
 			Degree: degree,
+			Duration: duration,
 		}
 
 		tmpl, err := template.ParseFiles("../frontend/index.html")

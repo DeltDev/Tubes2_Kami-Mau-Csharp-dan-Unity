@@ -76,8 +76,16 @@
             padding: 5px 10px;
         }
 
+        #startSuggestions ul li a, #finishSuggestions ul li a {
+            color: #c2c2c2;
+        }
+
         #startSuggestions ul li:hover, #finishSuggestions ul li:hover {
             background-color: #c2c0c2;
+            color: #383838;
+        }
+
+        #startSuggestions ul li:hover a, #finishSuggestions ul li:hover a {
             color: #383838;
         }
 
@@ -114,6 +122,15 @@
         #result ol {
             padding-left: 15px;
         }
+
+        #result ol a {
+            color: #c2c0c2;
+        }
+
+        #result ol a:hover {
+            color: white;
+        }
+
     </style>
 </head>
 <body>
@@ -156,15 +173,18 @@
         <h3>Path:</h3>
         <ol>
             {{range .Path}}
-                <li>{{.}}</li>
+                <li>
+                    <a href="https://en.wikipedia.org/wiki/{{.}}">{{.}}</a>
+                </li>
             {{end}}
         </ol>
         <h3>Degree: {{.Degree}}</h3>
+        <h3>Time: {{.Duration}}</h3>
     </div>
 
     <!-- Fungsi JavaScript untuk memberikan rekomendasi/sugesti Wikipedia Page -->
     <script>
-        // Fungsi memberikan sugesti Wikipedia Page
+        // Function to provide Wikipedia page suggestions
         function setupSuggestions(inputField, suggestionsDiv) {
             inputField.addEventListener('input', function() {
                 const searchTerm = inputField.value.trim();
@@ -172,23 +192,25 @@
                     suggestionsDiv.innerHTML = '';
                     return;
                 }
-
-                // Menggunakan API Wikipedia untuk mencari Page yang berhubungan dengan input
+    
+                // Using the Wikipedia API to search for pages related to the input
                 fetch(`https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=${searchTerm}&origin=*`)
                 .then(response => response.json())
                 .then(data => {
                     const suggestions = data[1];
                     suggestionsDiv.innerHTML = '';
-                    // Jika tidak ditemukan
+                    // If no suggestions found
                     if (suggestions.length === 0) {
                         suggestionsDiv.innerHTML = '<p>No suggestions found</p>';
-                    // Jika ditemukan
+                    // If suggestions found
                     } else {
-                        // Masukkan dalam list
+                        // Insert them into a list
                         const ul = document.createElement('ul');
                         suggestions.forEach(suggestion => {
                             const li = document.createElement('li');
-                            li.textContent = suggestion;
+                            li.innerHTML = `
+                            <p>${suggestion}</p>
+                            <a href="https://en.wikipedia.org/wiki/${suggestion}" target="_blank">https://en.wikipedia.org/wiki/${suggestion}</a>`;
                             // Clickable
                             li.addEventListener('click', function() {
                                 inputField.value = suggestion;
@@ -205,16 +227,17 @@
                 });
             });
         }
-
-        // Untuk start
+    
+        // For the start input
         const startInput = document.getElementById('start');
         const startSuggestionsDiv = document.getElementById('startSuggestions');
         setupSuggestions(startInput, startSuggestionsDiv);
-
-        // Untuk finish
+    
+        // For the finish input
         const finishInput = document.getElementById('finish');
         const finishSuggestionsDiv = document.getElementById('finishSuggestions');
         setupSuggestions(finishInput, finishSuggestionsDiv);
     </script>
+    
 </body>
 </html>
