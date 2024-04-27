@@ -64,9 +64,10 @@ func main() {
 		// Mencari hasil
 		var path []string
 		var pathLink []string
+		var nFileVisited int
 		startTime := time.Now()
 		if algorithm == "BFS" {
-			pathLink = BFS.BFS(start, finish)
+			pathLink, nFileVisited = BFS.BFS(start, finish)
 		} else if algorithm == "IDS" {
 			pathLink = IDS.IDS(start, finish)
 		}
@@ -90,6 +91,7 @@ func main() {
 
 		// Debug
 		fmt.Println(path)
+		fmt.Println("Jumlah File yang dikunjungi BFS: " nFileVisited)
 		// fmt.Println("Duration:", duration)
 
 		// Passing ke HTML
