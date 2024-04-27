@@ -53,10 +53,6 @@ func BFS(startPage string, endPage string) []string {
 			parentAndChildMap = scraper.RemoveRedundantMaphashtag(parentAndChildMap)
 
 			for parent, arrChild := range parentAndChildMap {
-				//fmt.Println("parent: ", parent)
-				if parent == "Indonesia" {
-					fmt.Println("================================")
-				}
 				for _, l := range arrChild {
 					if !visited[l] {
 						visited[l] = true
