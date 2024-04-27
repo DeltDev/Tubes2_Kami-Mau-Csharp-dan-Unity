@@ -1,8 +1,8 @@
 package main
 
 import (
-	"backend/IDS"
 	"backend/BFS"
+	"backend/IDS"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -16,6 +16,7 @@ type Response struct {
 	PathLink []string
 	Degree   int
 	Duration time.Duration
+	File 	 int
 }
 
 func main() {
@@ -29,6 +30,7 @@ func main() {
 			PathLink: paths,
 			Degree:   0,
 			Duration: 0,
+			File:	  0,
 		}
 
 		tmpl, err := template.ParseFiles("../frontend/index.html")
@@ -70,6 +72,7 @@ func main() {
 			pathLink, nFileVisited = BFS.BFS(start, finish)
 		} else if algorithm == "IDS" {
 			pathLink = IDS.IDS(start, finish)
+			nFileVisited = 0
 		}
 		endTime := time.Now()
 
@@ -100,6 +103,7 @@ func main() {
 			PathLink: pathLink,
 			Degree:   degree,
 			Duration: duration,
+			File:	  nFileVisited,
 		}
 
 		tmpl, err := template.ParseFiles("../frontend/index.html")
